@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocabulary Writing Practice</title>
+<style>
+:root{--blue:#2563eb;--green:#15803d;--red:#b91c1c;--ink:#1f2937}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:linear-gradient(135deg,#eef2ff,#f0fdfa)}
+.wrap{max-width:950px;margin:auto;padding:22px 14px 40px}
+header{text-align:center;margin-bottom:20px}
+h1{margin:0 0 8px;color:#1d4ed8;font-size:clamp(24px,4vw,34px)}
+.sub{margin:0;color:#475569;line-height:1.5}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;background:white;padding:14px;border-radius:16px;box-shadow:0 5px 18px #1e293b12;margin-bottom:14px}
+.score{font-weight:700;color:#1d4ed8}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;font-size:14px}
+.primary{background:var(--blue);color:white}.secondary{background:#e2e8f0;color:#1e293b}
+.table-head,.word-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.table-head{padding:0 14px 8px;color:#334155;font-weight:700}
+.word-row{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:13px;margin-bottom:10px;align-items:center;box-shadow:0 3px 12px #0f172a08}
+.vietnamese{font-weight:700;line-height:1.4}.number{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;background:#dbeafe;color:#1d4ed8;border-radius:9px;margin-right:7px;font-size:13px}
+.entry{min-width:0}input{width:100%;min-width:0;padding:11px 12px;border:2px solid #cbd5e1;border-radius:9px;font-size:16px;outline:none}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2563eb18}input.correct{border-color:#22c55e;background:#f0fdf4}input.incorrect{border-color:#ef4444;background:#fef2f2}
+.feedback{font-size:13px;margin-top:6px;min-height:16px;line-height:1.35}.feedback.good{color:var(--green);font-weight:700}.feedback.bad{color:var(--red)}
+.actions{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap}.check-one{background:#dbeafe;color:#1d4ed8;padding:7px 10px;font-size:12px}.reveal{background:#f1f5f9;color:#334155;padding:7px 10px;font-size:12px}
+.bottom-note{text-align:center;font-size:13px;color:#64748b;margin-top:16px}
+@media(max-width:600px){.wrap{padding:16px 9px 28px}.table-head,.word-row{grid-template-columns:1fr;gap:7px}.table-head{display:none}.word-row{padding:12px}.vietnamese{font-size:15px}.input{font-size:16px}.toolbar{align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Vocabulary Writing Practice</h1><p class="sub">Read the Vietnamese meaning, write the English word, then check each answer separately.</p></header>
+<div class="toolbar"><div class="score" id="score" aria-live="polite">Checked: 0 / 8 · Correct: 0</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" id="checkAll">Check All Answers</button><button class="secondary" id="reset">Try Again</button></div></div>
+<div class="table-head"><div>Vietnamese</div><div>Write in English</div></div>
+<main id="list"></main>
+<p class="bottom-note">Spelling is checked without distinguishing uppercase and lowercase letters.</p>
+</div>
+<script>
+const words=[
+{en:"afford",vi:"có đủ khả năng về tài chính"},
+{en:"agricultural",vi:"thuộc về nông nghiệp"},
+{en:"architecture",vi:"kiến trúc"},
+{en:"attract",vi:"thu hút"},
+{en:"authority",vi:"chính quyền, nhà chức trách"},
+{en:"childhood",vi:"tuổi thơ"},
+{en:"colonial",vi:"thuộc địa"},
+{en:"complaint",vi:"lời phàn nàn / sự khiếu nại"}
+];
+const list=document.getElementById('list'),checked=new Map();
+const normalize=s=>s.trim().toLocaleLowerCase().replace(/[‐‑‒–—]/g,'-').replace(/\s+/g,' ');
+words.forEach((word,i)=>{
+ const row=document.createElement('section');row.className='word-row';
+ row.innerHTML=`<div class="vietnamese"><span class="number">${i+1}</span>${word.vi}</div><div class="entry"><input id="answer-${i}" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="English answer for ${word.vi}" placeholder="Write the English word"><div class="feedback" id="feedback-${i}" aria-live="polite"></div><div class="actions"><button class="check-one" type="button" data-check="${i}">Check this answer</button><button class="reveal" type="button" data-reveal="${i}">Show answer</button></div></div>`;
+ list.appendChild(row);
+});
+function updateScore(){const correct=[...checked.values()].filter(Boolean).length;document.getElementById('score').textContent=`Checked: ${checked.size} / ${words.length} · Correct: ${correct}`}
+function checkOne(i){const input=document.getElementById(`answer-${i}`),feedback=document.getElementById(`feedback-${i}`),ok=normalize(input.value)===normalize(words[i].en);checked.set(i,ok);input.classList.toggle('correct',ok);input.classList.toggle('incorrect',!ok);feedback.className='feedback '+(ok?'good':'bad');feedback.textContent=ok?'Correct! Well done.':(input.value.trim()?'Not quite. Check the spelling and try again.':'Please write an answer first.');updateScore()}
+document.querySelectorAll('[data-check]').forEach(b=>b.addEventListener('click',()=>checkOne(Number(b.dataset.check))));
+document.querySelectorAll('[data-reveal]').forEach(b=>b.addEventListener('click',()=>{const i=Number(b.dataset.reveal),input=document.getElementById(`answer-${i}`),feedback=document.getElementById(`feedback-${i}`);input.value=words[i].en;input.classList.remove('incorrect');input.classList.add('correct');feedback.className='feedback good';feedback.textContent=`Answer: ${words[i].en}`;checked.set(i,true);updateScore()}));
+document.getElementById('checkAll').addEventListener('click',()=>words.forEach((_,i)=>checkOne(i)));
+document.getElementById('reset').addEventListener('click',()=>{words.forEach((_,i)=>{const input=document.getElementById(`answer-${i}`);input.value='';input.classList.remove('correct','incorrect');const f=document.getElementById(`feedback-${i}`);f.textContent='';f.className='feedback'});checked.clear();updateScore()});
+</script>
+</body>
+</html>
